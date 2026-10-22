@@ -1,0 +1,10 @@
+# Java IDEA
+.idea/
+*.iml
+target/
+out/
+# 日志
+*.log
+# redis、临时文件
+*.tmp
+.DS_Store
