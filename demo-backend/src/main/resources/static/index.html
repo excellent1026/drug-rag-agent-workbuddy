@@ -1,0 +1,170 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>药品知识库 - DrugRAG</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "PingFang SC", "Microsoft YaHei", sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+        .container {
+            max-width: 1100px;
+            margin: 0 auto;
+        }
+        .header {
+            text-align: center;
+            color: white;
+            padding: 30px 0;
+        }
+        .header h1 { font-size: 36px; margin-bottom: 8px; }
+        .header p { font-size: 16px; opacity: 0.85; }
+        .search-box {
+            background: white;
+            border-radius: 12px;
+            padding: 20px;
+            margin-bottom: 24px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.15);
+            display: flex;
+            gap: 12px;
+        }
+        .search-box input {
+            flex: 1;
+            padding: 12px 16px;
+            border: 2px solid #e0e0e0;
+            border-radius: 8px;
+            font-size: 15px;
+            outline: none;
+            transition: border-color 0.2s;
+        }
+        .search-box input:focus { border-color: #667eea; }
+        .search-box button {
+            padding: 12px 28px;
+            background: #667eea;
+            color: white;
+            border: none;
+            border-radius: 8px;
+            font-size: 15px;
+            cursor: pointer;
+            transition: background 0.2s;
+        }
+        .search-box button:hover { background: #5a6fd6; }
+        .search-box button.secondary { background: #f0f0f0; color: #333; }
+        .search-box button.secondary:hover { background: #e0e0e0; }
+        .drug-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+            gap: 20px;
+        }
+        .drug-card {
+            background: white;
+            border-radius: 12px;
+            padding: 22px;
+            box-shadow: 0 6px 20px rgba(0,0,0,0.1);
+            transition: transform 0.2s, box-shadow 0.2s;
+        }
+        .drug-card:hover {
+            transform: translateY(-4px);
+            box-shadow: 0 12px 30px rgba(0,0,0,0.18);
+        }
+        .drug-card h3 {
+            color: #333;
+            font-size: 20px;
+            margin-bottom: 6px;
+        }
+        .drug-type {
+            display: inline-block;
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            color: white;
+            padding: 3px 12px;
+            border-radius: 15px;
+            font-size: 12px;
+            margin-bottom: 14px;
+        }
+        .drug-info { font-size: 14px; line-height: 1.8; color: #555; }
+        .drug-info .label {
+            font-weight: 600;
+            color: #333;
+        }
+        .drug-info .row { margin-bottom: 4px; }
+        .empty-state {
+            text-align: center;
+            color: white;
+            padding: 60px 20px;
+            opacity: 0.8;
+        }
+        .empty-state .icon { font-size: 48px; margin-bottom: 12px; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>💊 药品知识库</h1>
+            <p>DrugRAG - 智能药品问答系统</p>
+        </div>
+
+        <div class="search-box">
+            <input type="text" id="searchInput" placeholder="搜索药品名称或功效...">
+            <button onclick="searchDrugs()">搜索</button>
+            <button class="secondary" onclick="loadAllDrugs()">全部</button>
+        </div>
+
+        <div id="drugContainer" class="drug-grid"></div>
+    </div>
+
+    <script>
+        async function loadAllDrugs() {
+            const container = document.getElementById('drugContainer');
+            try {
+                const res = await fetch('/drug/list');
+                const data = await res.json();
+                renderDrugs(data.data || []);
+            } catch (e) {
+                container.innerHTML = '<div class="empty-state"><div class="icon">😢</div>加载失败：' + e.message + '</div>';
+            }
+        }
+
+        async function searchDrugs() {
+            const keyword = document.getElementById('searchInput').value.trim();
+            const container = document.getElementById('drugContainer');
+            if (!keyword) { loadAllDrugs(); return; }
+            try {
+                const res = await fetch('/drug/search?keyword=' + encodeURIComponent(keyword));
+                const data = await res.json();
+                renderDrugs(data.data || []);
+            } catch (e) {
+                container.innerHTML = '<div class="empty-state"><div class="icon">😢</div>搜索失败</div>';
+            }
+        }
+
+        function renderDrugs(list) {
+            const container = document.getElementById('drugContainer');
+            if (!list.length) {
+                container.innerHTML = '<div class="empty-state"><div class="icon">🔍</div>没有找到相关药品</div>';
+                return;
+            }
+            container.innerHTML = list.map(d => `
+                <div class="drug-card">
+                    <h3>${d.drugName}</h3>
+                    <span class="drug-type">${d.drugType}</span>
+                    <div class="drug-info">
+                        <div class="row"><span class="label">用法：</span>${d.drugUsage}</div>
+                        <div class="row"><span class="label">禁忌：</span>${d.contraindication}</div>
+                        <div class="row"><span class="label">功效：</span>${d.effect}</div>
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        document.getElementById('searchInput').addEventListener('keypress', function(e) {
+            if (e.key === 'Enter') searchDrugs();
+        });
+
+        loadAllDrugs();
+    </script>
+</body>
+</html>

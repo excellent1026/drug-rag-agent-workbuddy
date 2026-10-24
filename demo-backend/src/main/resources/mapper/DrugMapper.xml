@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.drugrag.mapper.DrugMapper">
+    <select id="selectAll" resultType="Drug">
+        select id,drug_name,drug_type,drug_usage,contraindication,effect from drug
+    </select>
+    <select id="selectByKeyword" resultType="Drug">
+        select id,drug_name,drug_type,drug_usage,contraindication,effect
+        from drug
+        where drug_name like concat('%',#{keyword},'%')
+        or effect like concat('%',#{keyword},'%')
+    </select>
+</mapper>
