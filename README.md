@@ -25,8 +25,8 @@
 
 ## 🖼️ 项目演示截图
 
-![Agent交互界面](workbuddy_agent界面.png)
-![IMA知识库上传页面](workbuddy_知识库上传截图.png)
+![Agent交互界面](agent_demo.png)
+![IMA知识库上传页面](ima_kb_upload.png)
 
 ## 📖 功能说明
 
